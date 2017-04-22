@@ -1,0 +1,10 @@
+.ipynb_checkpoints
+*~
+__pycache__/
+*.py[cod]
+
+.idea/.name
+
+*.xml
+
+*.iml
