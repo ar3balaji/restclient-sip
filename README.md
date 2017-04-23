@@ -9,7 +9,7 @@
 ##### Github: https://github.com/balajisuiaji474/restclient-sip
 
 ## Abstract
-Build a RESTful interface to a SIP application server so that one can access SIP services from web clients. For example, "/login" could represent a list of currently logged in users, and doing a "GET /login/{email}" gets the contact information of a user identified by that email, "PUT /login/{email}" does a registration with the SIP system, and "DELETE /login/{email} does un-registration. Similarly, "/user/{email}" can represent the user profile and "/user/{email}/messages" could represent user's voice/video messages. Anyone could do a "POST /user/{email}/messages" but only the owner could retrieve his messages using "GET /user/{email}/messages".
+Build a RESTful interface to a SIP application server so that one can access SIP services from web clients. For example, "/login" represent a list of currently logged in users, and doing a "GET /login/{email}" gets the contact information of a user identified by that email, "PUT /login/{email}" does a registration refresh with the SIP system, and "DELETE /login/{email} does un-registration. Similarly, "/user/{email}" can represent the user profile and "/user/{email}/messages" could represent user's voice/video messages. Anyone could do a "POST /user/{email}/messages" but only the owner could retrieve his messages using "GET /user/{email}/messages".
 
 Finally, "/call" could represent a list of currently active or scheduled conferences, where you can join a call using "POST /call/{call-id}" with your email and session information, disconnect from the call using "DELETE /call/{call- id}/{your-participant-id}". As a first step, will build simple SIP application server with user profile, registration, and messages functions. Then will define and implement various RESTful APIs so that the server can also be accessed from a browser or web clients.
 
@@ -192,19 +192,24 @@ request-body: {"url": "/login/kundan@example.net", "session": "rtsp://...", ...}
 
 `DELETE /call/123 -- delete a call`
 
+`GET /call -- lists all current conferences`
+
 `GET /call/123 -- get participant list and call info response-body: {"subject": "some discussion topic",
 "children": [{"url": "/call/123/2", "session": "rtsp://..."}] }`
 
 ### Invite: 
-Call invitation requires a new message such as "SEND". For example, "SEND /login/{email}" sends the given message body to the target logged in user. Similarly, "CANCEL /login/{email}/1" cancels a previously sent message it is not already sent. The message body gives additional details such as whether the message is a call invitation or an instant message. The message body is application dependent. The SIP application server does not need to understand the message body, as long as it can send a SEND message from one client to another. This makes a SEND more closer to an XMPP instead of a SIP INVITE. If the callee wants to accept the call invitation, it joins the particular session URL independently.
+Call invitation requires a new message such as "SEND". For example, "SEND /invite/{email}" sends the given message body to the target logged in user. Similarly, "REJECT /invite/{email}" reject a previously sent invitation. The message body gives additional details such as whether the message is a call invitation or an instant message. The message body is application dependent. The SIP application server does not need to understand the message body, as long as it can send a SEND message from one client to another. This makes a SEND more closer to an XMPP instead of a SIP INVITE. If the callee wants to accept the call invitation, it joins the particular session URL independently.
 
 ### Sample invite examples
-`SEND /login/alok@example.net -- send call invitation request-body: {"command": "invite", "url": "/call/123", "id": 567}`
+`POST /invite/balaji@example.net -- send call invitation request-body: {"command": "invite", "url": "/call/123"}`
 
-`SEND /login/alok@example.net -- cancel an invitation request-body: {"command": "cancel", "url": "/call/123", "id": 567}`
+`POST /invite/balaji@example.net -- reject an invitation request-body: {"command": "reject", "url": "/call/123"}`
 
-`SEND /login/kundan@example.net -- sending a response
-request-body: {"command": "reject", "url": "/call/123", "id": 567, "reason": ...}`
+`POST /invite/balaji@example.net -- accept a invitation request-body: {"command": "accept", "url": "/call/123"}`
+
+`POST /invite/pending/balaji@example.net -- get pending invites`
+
+`SEND /invite/balaji@example.net -- get accepted invites`
 
 ### Profile and messages:
 The SIP application server will host user profile at "/user/{user_id}". The concept of user identifier will be implementation dependent. In particular, the client could "POST /user" to create a new user account, and get the identifier in the response. It can then do a "GET /user/{user_id}" to know various URLs to get contact location of this user. It can then do a GET on that URL to fetch the contacts or do a SEND on that URL to send a message or call invitation.
