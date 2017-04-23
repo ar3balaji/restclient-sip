@@ -90,6 +90,8 @@ The addresses registered to a Registrar are stored in a Location Server.
 ## Typical example
 SIP signaling follows the server-client paradigm as used widely in the Internet by protocols like HTTP or SMTP. The following picture presents a typical exchange of requests and responses. Please note that it is only a typical case and doesn't include all possible cases.
 
+![Alt text](/sip-example.gif?raw=true "Sample SIP example")
+
 Before understanding the methods, first you should understand the pictorial diagram. User 1 uses his softphone to reach the SIP phone of user2. Server1 and server2 help to setup the session on behalf of the users. This common arrangement of the proxies and the end-users is called "SIP Trapezoid" as depicted by the dotted line. The messages appear vertically in the order they appear i.e. the message on top (INVITE M1) comes first followed by others. The direction of arrows shows the sender and recipient of each message. Each message contains a 3-digit-number followed by a name and each one is labeled by 'M' and a serial number. The 3-digit-number is the numerical code of the associated message comprehended easily by machines. Human users use the name to identify the message.
 
 The transaction starts with user1 making an INVITE request for user2. But user1 doesn't know the exact location of user2 in the IP network. So it passes the request to server1. Server1 on behalf of user1 forwards an INVITE request for user2 to server2. It sends a TRYING response to user1 informing that it is trying to reach user2. The response could have been different but we will discuss the other types of responses later. If you are wondering how server1 knows that it has to forward the request to server2, just hold on for a moment. We will discuss that while going through the registration process of SIP.
@@ -177,3 +179,8 @@ response 2: ... -- subsequent presence updates.`
 
 ## Conclusion
 A RESTful interface to SIP application server is an interesting idea. This project will benefit both the web developer and SIP community in getting wider usage of SIP systems. The goal is not to replace SIP, but to provide a new mechanism that allows web-centric applications to use services of a SIP application server and to allow building such easy to use SIP application server.
+
+## References
+* https://www.ietf.org/rfc/rfc3261.txt
+* http://www.siptutorial.net/SIP/example.html
+* http://blog.kundansingh.com/2009/11/rest-and-sip.html
