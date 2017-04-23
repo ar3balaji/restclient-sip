@@ -3,9 +3,10 @@
 ## CS 544 Computer Networks II: Network Services – Sec 01
 ### Project report submitted to: Professor. Michael Y. Choi
 
-##### By : Balaji Alambadi Rajasekar
-##### CWID : A20347964
-##### Email: balambad@hawk.iit.edu
+##### By    : Balaji Alambadi Rajasekar
+##### CWID  : A20347964
+##### Email : balambad@hawk.iit.edu
+##### Github: https://github.com/balajisuiaji474/restclient-sip
 
 ## Abstract
 Build a RESTful interface to a SIP application server so that one can access SIP services from web clients. For example, "/login" could represent a list of currently logged in users, and doing a "GET /login/{email}" gets the contact information of a user identified by that email, "PUT /login/{email}" does a registration with the SIP system, and "DELETE /login/{email} does un-registration. Similarly, "/user/{email}" can represent the user profile and "/user/{email}/messages" could represent user's voice/video messages. Anyone could do a "POST /user/{email}/messages" but only the owner could retrieve his messages using "GET /user/{email}/messages".
