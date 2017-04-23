@@ -1,4 +1,4 @@
-# Rest client for sip protocol
+# RESTful interface to SIP application
 ## CS 544 Computer Networks II: Network Services – Sec 01
 ### Project report submitted to: Professor. Michael Y. Choi
 ##### Name : Balaji A R
@@ -22,10 +22,23 @@ Finally, "/call" could represent a list of currently active or scheduled confere
 * No existing SIP-based web tools similar to programming libraries for HTTP.
 * The initial cost to get started with basic working system is huge with lot of specifications, e.g., for NAT and firewall traversal. On the other hand, web developers are used to building applications on top of HTTP which works for most cases out of the box. More recently RESTful architectures are gaining popularity among web services. In the absence of easy to use web tools for SIP and large set of specifications for a SIP system, web developers tend to resort to quick and dirty hacks which in the end are short term and not interoperable. Hence there is a need for a easy to use RESTful architecture for SIP-based systems that allows quick application development by web developers.
 
+## What exactly is difficult?
+SIP supports both UDP and TCP transports. Many earlier systems implemented UDP, whereas both transports are a must for SIP proxy servers. In client-server communication, with several clients behind NAT and firewall, UDP causes problem. Secondly, with UDP you also need the reliability of transactions and hence the transaction state machines in SIP. The SIP request forking and early media feature have created lot of stir and confusion among developers. Several other telephony-style features are also not needed for many Internet oriented SIP applications that do not talk to a phone network. The NAT and firewall traversal are defined outside core SIP, e.g., using rport, sip-outbound. A developer usually prefers to have an integrated application library and API that is quick and easy to use. Moreover with lots of RFCs related to SIP, it becomes difficult to figure out what specifications are core and what are optional for a particular use case. A number of new web-based video communication systems use proprietary technologies such as on Flash Player because of lack of a ready-to-use SIP library to satisfy the needs.
+
+To solve the difficulties faced by web developers, a subset of the core features of SIP are needed as an easy to use API. Such an API could be available as a built-in browser feature or a plugin. Once the core set of resources are identified, rest of the API can be customized by the application server providers and developers, or in separate communities.
+
+## What use cases are considered?
+SIP is designed to be used consistently in different use cases such as client-to-client communication, client-to-server as well as server-to-server. The core SIP says that each SIP user agent (application client) has both UAC (client) and UAS (server). In this article I refer to client as a user agent and server as an application server, which are different from SIP terminology. Since the target audience for the proposal is application developers, only the client-server interface needs to be considered. The backend application server can translate the client-server request to appropriate SIP messaging for server-to-server case if needed, e.g., for service provider's network you may need high performance UDP based server-to-server SIP messages.
+
+## What are the SIP-related resources?
+Once we focus on a small subset of the problem -- define RESTful API for client-server communication to access a SIP application server -- rest of the solution falls in place naturally. In particular, the SIP application server will provide two core resources: "/login" and "/call" to represent list of currently logged in users and list of active calls. Additionally, it can provide user profiles of signed up users at "/user" which internally may contain things like voicemail resources for the user. The client uses standard HTTP requests, with some additional methods as shown below, to access the resources and interact with others. One difference with standard RESTful architecture is that the client-server connection may be long lived, and also used for notification from server to client. In that sense it does not remain pure RESTful.
+
+There are several other design questions that are left unanswered in the above text. Most of these can be intuitively answered. For example, the HTTP authentication credential defines the sender of a message, i.e., SIP "From" header. The sequential or parallel forking is a decision left to the client application. The decision whether to use a SDP or XML-based session description is application and implementation dependent. For example, if the client is creating a conference on RTSP server, it will just send the RTSP URL in the call invitations. Similarly, for Flash Player conferencing it will send an RTMP URL in the call invitation. The call property such as participant's session description can be fetched by accessing the call resource on the server. Thus, whether an RTSP/RTMP server is used to host a conference or a multicast address is used is all client or application dependent. The application server will provide tools to allow such freedom.
+
 ## Software Install steps
 * Install Python 3.0 +
 * Install flask using `pip install flask`
-* Download hello.py and start server by running `python hello.py` in file location
+* Once project submission is unzipped, start server by running `python hello.py` in file location
 
 ## Proposed API Endpoints:
 ### Login:
@@ -90,5 +103,7 @@ SIP includes an event subscription and notification mechanism which can be used 
 
 `GET /login/kundan@example.net -- keep track of presence updates
 response 1: ... -- initial presence information
-response 2: ... -- subsequent presence updates.
-`
+response 2: ... -- subsequent presence updates.`
+
+## Conclusion
+A RESTful interface to SIP application server is an interesting idea described in this article. The idea looks feasible and doable using existing software and tools, and hopefully will benefit both the web developer and SIP community in getting wider usage of SIP systems. The goal is not to replace SIP, but to provide a new mechanism that allows web-centric applications to use services of a SIP application server and to allow building such easy to use SIP application server.
