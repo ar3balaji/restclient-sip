@@ -151,6 +151,16 @@ def call_revoke(call_id):
         result['status'] = 'End call successfull'
     return jsonify(result)
 
+@app.route("/call", methods = ['GET'])
+def get_calls():
+    global calls
+    result ={}
+    if len(calls) <=0:
+        result['status'] = 'Conference calls not exist'
+    else:
+        result['scheduled_calls']= ['/call/'+str(i) for i in calls]
+    return jsonify(result)
+
 @app.route("/call/<call_id>", methods = ['GET'])
 def get_call_details(call_id):
     global calls, calls_id
