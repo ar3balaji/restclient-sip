@@ -2,12 +2,16 @@ from flask import Flask, request, jsonify, json
 from collections import defaultdict
 app = Flask(__name__)
 
+def get_def_dict():
+    return {'accept':[],'pending':[]}
+
 logins = defaultdict(dict)
 logins_id = 1
 login_expires = 3600
 calls = defaultdict(dict)
 calls_id = 1
 users = defaultdict(dict)
+invites = defaultdict(get_def_dict)
 
 @app.route("/")
 def hello():
@@ -210,6 +214,91 @@ def get_user_message(email):
         else:
             result['messages']=users[email]['messages']
     return jsonify(result)
+
+@app.route("/invite/<email_id>", methods = ['POST'])
+def add_invite(email_id):
+    global invites, calls
+    result = {}
+    invite_to = ''
+    command = ''
+    call_url = ''
+    if 'To' in request.headers:
+        invite_to = request.headers['To']
+    if 'Command' in request.headers:
+        command = request.headers['Command']
+    if 'url' in request.headers:
+        call_url = request.headers['url']
+    if len(command)<=0:
+        result['status']='Type of invite is missing'
+        return jsonify(result)
+    if command !='accept' and command!='reject' and len(invite_to)<=0:
+        result['status']='Invite recepient is missing'
+        return jsonify(result)
+    if len(call_url)<=0:
+        result['status']='Call url is missing'
+        return jsonify(result)
+    if email_id not in logins:
+        result['status']='Invite sender does not exist'
+        return jsonify(result)
+    if command !='accept' and command!='reject' and invite_to not in logins:
+        result['status']='Invite recepient does not exist'
+        return jsonify(result)
+
+    if command == 'invite' and call_url not in invites[invite_to]['pending']:
+        invites[invite_to]['pending'].append(call_url)
+        result['status']='Call invite sent'
+        return jsonify(result)
+    elif command == 'invite':
+        result['status']='Call invite already exist'
+        return jsonify(result)
+
+    if command == 'accept' and call_url not in invites[email_id]['pending']:
+        result['status']='Call invite does not exist'
+        return jsonify(result)
+    elif command == 'accept' and call_url in invites[email_id]['pending']:
+        invites[email_id]['pending'].remove(call_url)
+        invites[email_id]['accept'].append(call_url)
+        current_call_id = int(call_url.split('/call/')[1])
+        calls[current_call_id]['children'].append('/login/'+email_id)
+        result['status']='Call invite accepted'
+        return jsonify(result)
+
+    if command == 'reject' and call_url not in invites[email_id]['pending']:
+        result['status']='Call invite does not exist'
+        return jsonify(result)
+    elif command == 'reject' and call_url in invites[email_id]['pending']:
+        invites[email_id]['pending'].remove(call_url)
+        result['status']='Call invite rejected'
+        return jsonify(result)
+    result['status'] ='Operation not supported'
+    return jsonify(result)
+
+@app.route("/invite/<email_id>", methods = ['GET'])
+def get_accept_invites(email_id):
+    result = {}
+    if email_id in invites and len(invites[email_id]['accept'])<=0:
+        result['status'] = 'User does not have any invites'
+    elif email_id not in invites and email_id not in logins:
+        result['status'] = 'User does not exist'
+    elif email_id not in invites and email_id in logins:
+        result['status'] = 'User does not have any invites'
+    else:
+        result['calls_accepted'] = invites[email_id]['accept']
+    return jsonify(result)
+
+@app.route("/invite/pending/<email_id>", methods = ['GET'])
+def get_pending_invites(email_id):
+    result = {}
+    if email_id in invites and len(invites[email_id]['pending'])<=0:
+        result['status'] = 'User does not have any pending invites'
+    elif email_id not in invites and email_id not in logins:
+        result['status'] = 'User does not exist'
+    elif email_id in logins and email_id not in invites:
+        result['status'] = 'User does not have any pending invites'
+    else:
+        result['pending_invites'] = invites[email_id]['pending']
+    return jsonify(result)
+
 
 if __name__ == "__main__":
     app.run()
