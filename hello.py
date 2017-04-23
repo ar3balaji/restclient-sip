@@ -7,6 +7,8 @@ logins_id = 1
 login_expires = 3600
 calls = defaultdict(dict)
 calls_id = 1
+users = defaultdict(dict)
+
 @app.route("/")
 def hello():
     result ={}
@@ -118,6 +120,22 @@ def call_setup():
         calls_id+=1
     return jsonify(result)
 
+@app.route("/call/<call_id>", methods = ['POST'])
+def add_user_to_a_call(call_id):
+    global calls
+    result ={}
+    if int(call_id) not in calls:
+        result['status'] = 'Call id does not exist'
+    else:
+        current_user = request.headers['url']
+        if len(current_user) <=0:
+            result['status'] = 'User login url is missing.'
+        else:
+            if current_user not in calls[int(call_id)]['children']:
+                calls[int(call_id)]['children'].append(current_user)
+            result['status'] = 'Successfully joined call.'
+    return jsonify(result)
+
 @app.route("/call/<call_id>", methods = ['DELETE'])
 def call_revoke(call_id):
     global calls
@@ -137,6 +155,60 @@ def get_call_details(call_id):
         result['status'] = 'Call id does not exist'
     else:
         result['children']= calls[int(call_id)]['children']
+    return jsonify(result)
+
+@app.route("/user", methods = ['POST'])
+def add_user():
+    global users
+    result={}
+    current_email=''
+    if 'Email' in request.headers:
+        current_email = request.headers['Email']
+    if len(current_email) <= 0:
+        result['status'] = 'Valid email address is required'
+    else:
+        if current_email not in users:
+            tmp={}
+            tmp['id']=current_email
+            tmp['url']='/user/'+current_email
+            result = tmp.copy()
+            tmp['messages'] = []
+            users[current_email]=tmp
+        else:
+            result['id']=users[current_email]['id']
+            result['url']=users[current_email]['url']
+    return jsonify(result)
+
+@app.route("/user/message/<email>", methods = ['POST'])
+def add_user_message(email):
+    global users
+    result={}
+    current_message=''
+    if 'Message' in request.headers:
+        current_message = request.headers['Message']
+    if len(current_message) <= 0:
+        result['status'] = 'Valid message is required'
+    else:
+        if email not in users:
+            result['status'] = 'User does not exist'
+        else:
+            if current_message not in users[email]['messages']:
+                users[email]['messages'].append(current_message)
+            result['status'] = 'Message added to the user'
+    return jsonify(result)
+
+@app.route("/user/message/<email>", methods = ['GET'])
+def get_user_message(email):
+    global users
+    result={}
+
+    if email not in users:
+        result['status'] = 'User does not exist'
+    else:
+        if len(users[email]['messages']) == 0:
+            result['status'] = 'Message does not exist for the user'
+        else:
+            result['messages']=users[email]['messages']
     return jsonify(result)
 
 if __name__ == "__main__":
