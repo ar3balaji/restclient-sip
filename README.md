@@ -1,9 +1,12 @@
 # RESTful interface to SIP application
+
 ## CS 544 Computer Networks II: Network Services – Sec 01
 ### Project report submitted to: Professor. Michael Y. Choi
-##### Name : Balaji A R
+
+##### By : Balaji Alambadi Rajasekar
 ##### CWID : A20347964
 ##### Email: balambad@hawk.iit.edu
+
 ## Abstract
 Build a RESTful interface to a SIP application server so that one can access SIP services from web clients. For example, "/login" could represent a list of currently logged in users, and doing a "GET /login/{email}" gets the contact information of a user identified by that email, "PUT /login/{email}" does a registration with the SIP system, and "DELETE /login/{email} does un-registration. Similarly, "/user/{email}" can represent the user profile and "/user/{email}/messages" could represent user's voice/video messages. Anyone could do a "POST /user/{email}/messages" but only the owner could retrieve his messages using "GET /user/{email}/messages".
 
@@ -90,8 +93,6 @@ The addresses registered to a Registrar are stored in a Location Server.
 ## Typical example
 SIP signaling follows the server-client paradigm as used widely in the Internet by protocols like HTTP or SMTP. The following picture presents a typical exchange of requests and responses. Please note that it is only a typical case and doesn't include all possible cases.
 
-![Alt text](/sip-example.gif?raw=true "Sample SIP example")
-
 Before understanding the methods, first you should understand the pictorial diagram. User 1 uses his softphone to reach the SIP phone of user2. Server1 and server2 help to setup the session on behalf of the users. This common arrangement of the proxies and the end-users is called "SIP Trapezoid" as depicted by the dotted line. The messages appear vertically in the order they appear i.e. the message on top (INVITE M1) comes first followed by others. The direction of arrows shows the sender and recipient of each message. Each message contains a 3-digit-number followed by a name and each one is labeled by 'M' and a serial number. The 3-digit-number is the numerical code of the associated message comprehended easily by machines. Human users use the name to identify the message.
 
 The transaction starts with user1 making an INVITE request for user2. But user1 doesn't know the exact location of user2 in the IP network. So it passes the request to server1. Server1 on behalf of user1 forwards an INVITE request for user2 to server2. It sends a TRYING response to user1 informing that it is trying to reach user2. The response could have been different but we will discuss the other types of responses later. If you are wondering how server1 knows that it has to forward the request to server2, just hold on for a moment. We will discuss that while going through the registration process of SIP.
@@ -105,6 +106,57 @@ User2 at this point has a choice to accept or decline the call. Let's assume tha
 Once the connection has been setup, media flows between the two endpoints. Media flow is controlled using protocols different from SIP e.g. RTP.
 
 When one party in the session decides to disconnect, it (user2 in this case) sends a BYE message to the other party. The other party sends a 200 OK message to confirm the termination of the session.
+
+## SIP Request format
+In the previous SIP session example we have seen that requests are sent by clients to servers. We will now discuss what that request actually contains. The following is the format of INVITE request as sent by user1.
+
+`INVITE sip:user2@server2.com SIP/2.0`
+
+`Via: SIP/2.0/UDP pc33.server1.com;branch=z9hG4bK776asdhds Max-Forwards: 70`
+
+`To: user2 <sip:user2@server2.com>`
+
+`From: user1 <sip:user1@server1.com>;tag=1928301774`
+
+`Call-ID: a84b4c76e66710@pc33.server1.com `
+
+`CSeq: 314159 INVITE`
+
+`Contact: <sip:user1@pc33.server1.com>`
+
+`Content-Type: application/sdp`
+
+`Content-Length: 142` 
+
+`---- User1 Message Body Not Shown ----`
+The first line of the text-encoded message is called Request-Line. It identifies that the message is a request.
+
+## SIP Response format
+Here is what the SIP response of user2 will look like.
+
+`SIP/2.0 200 OK`
+
+`Via: SIP/2.0/UDP site4.server2.com;branch=z9hG4bKnashds8;received=192.0.2.3`
+
+`Via: SIP/2.0/UDP site3.server1.com;branch=z9hG4bK77ef4c2312983.1;received=192.0.2.2`
+
+`Via: SIP/2.0/UDP pc33.server1.com;branch=z9hG4bK776asdhds;received=192.0.2.1`
+
+`To: user2 <sip:user2@server2.com>;tag=a6c85cf`
+
+`From: user1 <sip:user1@server1.com>;tag=1928301774`
+
+`Call-ID: a84b4c76e66710@pc33.server1.com`
+
+`CSeq: 314159 INVITE`
+
+`Contact: <sip:user2@192.0.2.4>`
+
+`Content-Type: application/sdp`
+
+`Content-Length: 131`
+
+`---- User2 Message Body Not Shown ----`
 
 
 ## Software Install steps
